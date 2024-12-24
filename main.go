@@ -21,6 +21,10 @@ const (
 		"Ср. скорость: %.2f км/ч\n" +
 		"Потрачено ккал: %.2f\n"
 
+	walkingType  = "Ходьба"
+	runningType  = "Бег"
+	swimmingType = "Плавание"
+
 	CaloriesMeanSpeedMultiplier = 18   // Множитель средней скорости бега
 	CaloriesMeanSpeedShift      = 1.79 // Коэффициент изменения средней скорости
 
@@ -104,10 +108,10 @@ type Running struct {
 
 // Calories возвращает количество потраченных килокалория при беге.
 func (r Running) Calories() float64 {
-	averageSpeed := r.meanSpeed()
 	if r.Duration == 0 {
 		return 0.0
 	}
+	averageSpeed := r.meanSpeed()
 	return (CaloriesMeanSpeedMultiplier*averageSpeed + CaloriesMeanSpeedShift) *
 		r.Weight / MInKm * r.Duration.Hours() * MinsInHour
 }
@@ -126,17 +130,16 @@ type Walking struct {
 // Calories возвращает количество потраченных килокалорий при ходьбе.
 func (w Walking) Calories() float64 {
 	// вставьте ваш код ниже
-	averageSpeed := w.meanSpeed() * KmHInMsec
 	if w.Height == 0 {
 		return 0.0
 	}
+	averageSpeed := w.meanSpeed() * KmHInMsec
 	return ((CaloriesWeightMultiplier*w.Weight + (math.Pow(averageSpeed, 2))/
 		w.Height/CmInM) * CaloriesSpeedHeightMultiplier * w.Weight) *
 		w.Duration.Hours() * MinsInHour
 }
 
 // TrainingInfo возвращает структуру InfoMessage с информацией о проведенной тренировке.
-// Это переопределенный метод TrainingInfo() из Training.
 func (w Walking) TrainingInfo() InfoMessage {
 	return w.Training.TrainingInfo()
 }
@@ -182,15 +185,13 @@ func (s Swimming) TrainingInfo() InfoMessage {
 
 // ReadData возвращает информацию о проведенной тренировке.
 func ReadData(training CaloriesCalculator) string {
-	info := training.TrainingInfo()
-	info.Calories = training.Calories()
-	return fmt.Sprint(info)
+	return training.TrainingInfo().String()
 }
 
 func main() {
 	swimming := Swimming{
 		Training: Training{
-			TrainingType: "Плавание",
+			TrainingType: swimmingType,
 			Action:       2000,
 			LenStep:      SwimmingLenStep,
 			Duration:     90 * time.Minute,
@@ -204,7 +205,7 @@ func main() {
 
 	walking := Walking{
 		Training: Training{
-			TrainingType: "Ходьба",
+			TrainingType: walkingType,
 			Action:       20000,
 			LenStep:      LenStep,
 			Duration:     3*time.Hour + 45*time.Minute,
@@ -217,7 +218,7 @@ func main() {
 
 	running := Running{
 		Training: Training{
-			TrainingType: "Бег",
+			TrainingType: runningType,
 			Action:       5000,
 			LenStep:      LenStep,
 			Duration:     30 * time.Minute,
